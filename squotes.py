@@ -15,6 +15,7 @@ import requests
 import telethon
 from telethon.tl import types
 from telethon.tl.patched import Message
+import traceback # Додано для відлову помилок
 
 from .. import loader, utils
 
@@ -161,9 +162,10 @@ class ShitQuotesMod(loader.Module):
                 "text_color": self.settings["text_color"],
             }
 
+            # Додано verify=False для обходу проблем з SSL на старому API
             r = await self._api_request(payload)
             if r.status_code != 200:
-                await utils.answer(message, self.strings["api_error"])
+                await utils.answer(message, f"{self.strings['api_error']}: Code {r.status_code}")
                 return
 
             quote = io.BytesIO(r.content)
@@ -174,7 +176,8 @@ class ShitQuotesMod(loader.Module):
                 message[0] if isinstance(message, (list, tuple, set)) else message
             ).delete()
         except Exception as e:
-            await message.edit(f"Error :(")
+            # Вивід реальної помилки для діагностики
+            await message.edit(f"<b>SQuotes Error:</b> {e}")
 
     async def quote_parse_messages(self, message: Message, count: int):
         payloads = []
@@ -304,9 +307,10 @@ class ShitQuotesMod(loader.Module):
                 "text_color": self.settings["text_color"],
             }
 
+            # Додано verify=False
             r = await self._api_request(payload)
             if r.status_code != 200:
-                await utils.answer(message, self.strings["api_error"])
+                await utils.answer(message, f"{self.strings['api_error']}: Code {r.status_code}")
                 return
 
             quote = io.BytesIO(r.content)
@@ -317,7 +321,7 @@ class ShitQuotesMod(loader.Module):
                 message[0] if isinstance(message, (list, tuple, set)) else message
             ).delete()
         except Exception as e:
-            await message.edit(f"Error :(")
+            await message.edit(f"<b>SQuotes Error:</b> {e}")
 
     async def fakequote_parse_messages(self, args: str, reply: Message):
         async def get_user(args: str):
@@ -448,4 +452,4 @@ class ShitQuotesMod(loader.Module):
         return settings
 
     async def _api_request(self, data: dict):
-        return await utils.run_sync(requests.post, self.api_endpoint, json=data)
+        return await utils.run_sync(requests.post, self.api_endpoint, json=data, verify=False)
