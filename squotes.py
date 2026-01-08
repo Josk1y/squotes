@@ -15,7 +15,7 @@ import requests
 import telethon
 from telethon.tl import types
 from telethon.tl.patched import Message
-import traceback 
+import traceback
 
 from .. import loader, utils
 
@@ -34,7 +34,6 @@ def get_message_media(message: Message):
 
 
 def get_entities(entities: types.TypeMessageEntity):
-    # coded by @droox
     r = []
     if entities:
         for entity in entities:
